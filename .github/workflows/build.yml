@@ -9,6 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Arrange project layout
+        run: |
+          mkdir -p app/src/main/java/com/aero/visual
+          mv ./*.java app/src/main/java/com/aero/visual/
+          mv AndroidManifest.xml app/src/main/AndroidManifest.xml
+          mv app_build.gradle app/build.gradle
+          mkdir -p app/src/main/res/xml
+          mv accessibility_config.xml app/src/main/res/xml/accessibility_config.xml
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -16,12 +24,6 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
-      - name: Arrange project layout
-        run: |
-          mkdir -p app/src/main/java/com/aero/visual
-          mv ./*.java app/src/main/java/com/aero/visual/
-          mv AndroidManifest.xml app/src/main/AndroidManifest.xml
-          mv app_build.gradle app/build.gradle
       - name: Accept Android SDK licenses
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
       - name: Build debug APK
