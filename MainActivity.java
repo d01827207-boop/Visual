@@ -28,6 +28,7 @@ public final class MainActivity extends Activity {
 
     private SharedPreferences prefs;
     private TextView status;
+    private TextView arStatus;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -94,12 +95,38 @@ public final class MainActivity extends Activity {
         addSeek(root, "Макс. рамок", Config.K_MAX_BOXES, 1, 16, Config.D_MAX_BOXES);
         addSeek(root, "Интервал анализа (мс)", Config.K_INTERVAL, 20, 300, Config.D_INTERVAL);
         addSeek(root, "Толщина рамки (dp)", Config.K_BOX_THICK, 1, 8, Config.D_BOX_THICK);
+
+        addTitle(root, "Анти-отдача (экспериментально)");
+        TextView arNote = new TextView(this);
+        arNote.setText("Работает через «Специальные возможности»: по нажатию плавающей кнопки «AR» служба сама "
+                + "проводит один свайп в зоне камеры. Приложение не знает, когда ты стреляешь, свайп запускаешь "
+                + "ты нажатием кнопки. Принимает ли игра такие касания, НЕ проверено. Значения по умолчанию не "
+                + "откалиброваны: подбирай на тренировке. Если на Android 13+ службу нельзя включить (серая), "
+                + "открой «Настройки приложения», нажми ⋮ вверху и выбери «Разрешить ограниченные настройки».");
+        root.addView(arNote);
+        arStatus = new TextView(this);
+        arStatus.setTextSize(16);
+        root.addView(arStatus);
+        addButton(root, "Открыть «Специальные возможности»", v -> startActivity(
+                new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
+        addButton(root, "Открыть настройки этого приложения", v -> startActivity(new Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))));
+        addSwitch(root, "Показывать кнопку «AR»", AntiRecoilService.K_AR_ON, AntiRecoilService.D_AR_ON);
+        addSeek(root, "Старт свайпа по X (% экрана)", AntiRecoilService.K_START_X, 0, 100, AntiRecoilService.D_START_X);
+        addSeek(root, "Старт свайпа по Y (% экрана)", AntiRecoilService.K_START_Y, 0, 100, AntiRecoilService.D_START_Y);
+        addSeek(root, "Скорость вниз (пикс/с, минус = вверх)", AntiRecoilService.K_RATE_Y, -1500, 1500, AntiRecoilService.D_RATE_Y);
+        addSeek(root, "Скорость вбок (пикс/с, минус = влево)", AntiRecoilService.K_RATE_X, -1500, 1500, AntiRecoilService.D_RATE_X);
+        addSeek(root, "Длительность свайпа (мс)", AntiRecoilService.K_DUR, 100, 5000, AntiRecoilService.D_DUR);
+        addSeek(root, "Задержка перед свайпом (мс)", AntiRecoilService.K_DELAY, 0, 1000, AntiRecoilService.D_DELAY);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         status.setText(OverlayService.running ? "Состояние: работает" : "Состояние: остановлено");
+        arStatus.setText(AntiRecoilService.connected
+                ? "Служба анти-отдачи: включена (кнопка «AR» на экране)"
+                : "Служба анти-отдачи: выключена");
     }
 
     @Override
